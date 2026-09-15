@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://www.google.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: https://*.googleusercontent.com https://www.gstatic.com https://www.google.com;
+  connect-src 'self' https://*.googleapis.com https://www.google.com https://accounts.google.com https://*.firebaseapp.com https://*.firebaseio.com https://*.cloudfunctions.net;
+  frame-src https://www.google.com https://accounts.google.com https://*.firebaseapp.com https://apis.google.com;
+  base-uri 'self';
+  form-action 'self' https://accounts.google.com;
+  object-src 'none';
+  frame-ancestors 'none';
+  upgrade-insecure-requests;
+">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#05060a">
+<title>Nova Nexus — Identity for the Ecosystem</title>
+<meta name="description" content="Nova Nexus is the identity hub for the ecosystem — sign in once, move freely between every connected Side Website.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Ambient background: a hub with connections -->
+<div class="ambience" aria-hidden="true">
+  <div class="hub-glow"></div>
+  <svg class="network" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <g class="network-lines" stroke="rgba(255,255,255,0.09)" stroke-width="1" fill="none">
+      <line x1="500" y1="340" x2="210" y2="120"/>
+      <line x1="500" y1="340" x2="780" y2="140"/>
+      <line x1="500" y1="340" x2="860" y2="470"/>
+      <line x1="500" y1="340" x2="700" y2="780"/>
+      <line x1="500" y1="340" x2="320" y2="830"/>
+      <line x1="500" y1="340" x2="110" y2="560"/>
+      <line x1="500" y1="340" x2="620" y2="480"/>
+    </g>
+    <g class="network-lines-soft" stroke="rgba(124,108,251,0.12)" stroke-width="0.75" fill="none">
+      <line x1="780" y1="140" x2="860" y2="470"/>
+      <line x1="110" y1="560" x2="320" y2="830"/>
+      <line x1="620" y1="480" x2="700" y2="780"/>
+    </g>
+    <g class="network-nodes" fill="rgba(255,255,255,0.4)">
+      <circle cx="210" cy="120" r="3"/>
+      <circle cx="780" cy="140" r="3"/>
+      <circle cx="860" cy="470" r="3.5"/>
+      <circle cx="700" cy="780" r="3"/>
+      <circle cx="320" cy="830" r="3"/>
+      <circle cx="110" cy="560" r="2.5"/>
+      <circle cx="620" cy="480" r="2.5"/>
+    </g>
+    <circle class="network-hub" cx="500" cy="340" r="7" fill="url(#hubGradient)"/>
+    <defs>
+      <radialGradient id="hubGradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#b3a9ff"/>
+        <stop offset="100%" stop-color="#6d5efc"/>
+      </radialGradient>
+    </defs>
+  </svg>
+</div>
+
+<div class="app-loader" id="appLoader">
+  <div class="loader-mark">NX</div>
+  <div class="loader-bar"><span></span></div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- ================= AUTH VIEW ================= -->
+<main class="view auth-view" id="authView">
+  <div class="auth-wrap">
+    <div class="brand">
+      <div class="brand-mark">NX</div>
+      <div class="brand-text">
+        <span class="brand-name">Nova Nexus</span>
+        <span class="brand-tag">One account, every Side Website.</span>
+      </div>
+    </div>
+
+    <section class="auth-card glass">
+      <div class="auth-switcher-group" id="authSwitcherGroup">
+        <label class="persist-toggle" for="keepSignedIn">
+          <input type="checkbox" id="keepSignedIn" checked>
+          <span>Keep me signed in on this device</span>
+        </label>
+
+        <button type="button" class="btn btn-google btn-block" id="googleSignInBtn">
+          <span class="google-icon">
+            <svg viewBox="0 0 48 48" width="18" height="18">
+              <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+              <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+              <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+              <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+            </svg>
+          </span>
+          <span class="btn-label">Continue with Google</span>
+          <span class="btn-spinner"></span>
+        </button>
+
+        <div class="divider"><span>or continue with email</span></div>
+
+        <div class="tab-switcher" id="tabSwitcher">
+          <button type="button" class="tab-btn active" data-tab="login">Sign In</button>
+          <button type="button" class="tab-btn" data-tab="signup">Create Account</button>
+          <div class="tab-indicator" id="tabIndicator"></div>
+        </div>
+      </div>
+
+      <div class="panels">
+        <form class="panel active" id="loginPanel" novalidate>
+          <div class="field">
+            <input type="email" id="loginEmail" placeholder=" " autocomplete="email" required>
+            <label for="loginEmail">Email address</label>
+          </div>
+          <div class="field field--icon">
+            <input type="password" id="loginPassword" placeholder=" " autocomplete="current-password" required>
+            <label for="loginPassword">Password</label>
+            <button type="button" class="field-icon-btn" data-toggle-pass="loginPassword" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-row">
+            <button type="button" class="link-btn" id="forgotPasswordBtn">Forgot password?</button>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="loginSubmit">
+            <span class="btn-label">Sign In</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </form>
+
+        <form class="panel" id="resetPanel" novalidate>
+          <p class="panel-hint">Enter the email on your account and we'll send a reset link.</p>
+          <div class="field">
+            <input type="email" id="resetEmail" placeholder=" " autocomplete="email" required>
+            <label for="resetEmail">Email address</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="resetSubmit">
+            <span class="btn-label">Send Reset Link</span>
+            <span class="btn-spinner"></span>
+          </button>
+          <button type="button" class="link-btn back-link" id="backToLoginBtn">Back to sign in</button>
+        </form>
+
+        <form class="panel" id="signupPanel" novalidate>
+          <div class="field">
+            <input type="text" id="signupUsername" placeholder=" " autocomplete="username" required minlength="3" maxlength="24">
+            <label for="signupUsername">Username</label>
+          </div>
+          <div class="field">
+            <input type="email" id="signupEmail" placeholder=" " autocomplete="email" required>
+            <label for="signupEmail">Email address</label>
+          </div>
+          <div class="field field--icon">
+            <input type="password" id="signupPassword" placeholder=" " autocomplete="new-password" required minlength="8">
+            <label for="signupPassword">Password</label>
+            <button type="button" class="field-icon-btn" data-toggle-pass="signupPassword" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="field-hint">At least 8 characters, with at least 1 number.</p>
+          <div class="strength-meter" id="strengthMeter"><span></span></div>
+          <div class="field">
+            <input type="password" id="signupConfirm" placeholder=" " autocomplete="new-password" required minlength="8">
+            <label for="signupConfirm">Confirm password</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="signupSubmit">
+            <span class="btn-label">Create Account</span>
+            <span class="btn-spinner"></span>
+          </button>
+        </form>
+
+        <div class="panel" id="verifyPanel">
+          <div class="verify-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 6 12 13 22 6"/></svg>
+          </div>
+          <h3 class="verify-heading">Verify your email</h3>
+          <p class="panel-hint">We sent a link to <strong id="verifyEmailDisplay">—</strong>. Click it to activate your account — check your spam or junk folder if it hasn't arrived.</p>
+          <button type="button" class="btn btn-primary btn-block" id="continueVerifiedBtn">
+            <span class="btn-label">I've Verified — Continue</span>
+            <span class="btn-spinner"></span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-block" id="resendVerificationBtn">
+            <span class="btn-label">Resend Verification Email</span>
+            <span class="btn-spinner"></span>
+          </button>
+          <button type="button" class="link-btn back-link" id="verifySignOutBtn">Not you? Sign out</button>
+        </div>
+      </div>
+
+      <p class="legal-note" id="legalNote">
+        By continuing you agree to Nova Nexus's
+        <button type="button" class="link-inline" id="openTerms">Terms &amp; Conditions</button>
+        and
+        <button type="button" class="link-inline" id="openPrivacy">Privacy Policy</button>.
+      </p>
+      <p class="legal-note recaptcha-note" id="recaptchaNote">
+        This site is protected by reCAPTCHA and the Google
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="link-inline">Privacy Policy</a>
+        and
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" class="link-inline">Terms of Service</a>
+        apply.
+      </p>
+    </section>
+  </div>
+</main>
+
+<!-- ================= DASHBOARD VIEW ================= -->
+<main class="view dashboard-view" id="dashboardView" hidden>
+  <header class="dash-header">
+    <div class="brand brand-sm">
+      <div class="brand-mark">NX</div>
+      <span class="brand-name">Nova Nexus</span>
+    </div>
+    <div class="user-chip">
+      <span class="avatar" id="userAvatar">?</span>
+      <div class="user-chip-text">
+        <span class="user-chip-name" id="chipUsername">—</span>
+        <span class="user-chip-email" id="chipEmail">—</span>
+      </div>
+      <button type="button" class="icon-btn" id="logoutBtn" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <section class="dash-hero">
+    <h1>Welcome back, <span id="heroUsername">there</span>.</h1>
+    <p>You're signed in and verified — every connected Side Website will recognize you.</p>
+  </section>
+
+  <section class="dash-grid">
+    <article class="dash-card glass">
+      <h2>Profile</h2>
+      <p class="card-sub">Update how you appear across the ecosystem.</p>
+      <div class="field">
+        <input type="text" id="profileUsername" placeholder=" " minlength="3" maxlength="24">
+        <label for="profileUsername">Username</label>
+      </div>
+      <div class="field field-static">
+        <input type="email" id="profileEmail" placeholder=" " disabled>
+        <label for="profileEmail">Email address</label>
+      </div>
+      <button type="button" class="btn btn-secondary" id="updateProfileBtn">
+        <span class="btn-label">Save Changes</span>
+        <span class="btn-spinner"></span>
+      </button>
+    </article>
+
+    <article class="dash-card glass">
+      <h2>Security</h2>
+      <p class="card-sub">Change your password. You'll need your current one.</p>
+      <div id="securityPasswordForm">
+        <div class="field">
+          <input type="password" id="currentPassword" placeholder=" " autocomplete="current-password">
+          <label for="currentPassword">Current password</label>
+        </div>
+        <div class="field">
+          <input type="password" id="newPassword" placeholder=" " autocomplete="new-password" minlength="8">
+          <label for="newPassword">New password</label>
+        </div>
+        <p class="field-hint">At least 8 characters, with at least 1 number.</p>
+        <div class="field">
+          <input type="password" id="confirmNewPassword" placeholder=" " autocomplete="new-password" minlength="8">
+          <label for="confirmNewPassword">Confirm new password</label>
+        </div>
+        <button type="button" class="btn btn-secondary" id="changePasswordBtn">
+          <span class="btn-label">Update Password</span>
+          <span class="btn-spinner"></span>
+        </button>
+      </div>
+      <p class="card-note" id="securityGoogleNote" hidden>You signed in with Google, so your password is managed through your Google Account.</p>
+    </article>
+
+    <article class="dash-card glass card-featured card-span">
+      <h2>Ecosystem Access</h2>
+      <p class="card-sub">Open a connected Side Website without signing in again. Nova Nexus passes it a signed token directly, window-to-window — never through a URL.</p>
+      <button type="button" class="btn btn-gradient" id="launchSideBtn">
+        <span class="btn-label">Launch Side Website</span>
+        <svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+    </article>
+  </section>
+
+  <section class="dash-danger-zone">
+    <article class="dash-card glass card-danger">
+      <h2>Danger Zone</h2>
+      <p class="card-sub">Permanently delete your account and all associated data. This can't be undone.</p>
+      <button type="button" class="btn btn-danger" id="openDeleteModalBtn">Delete Account</button>
+    </article>
+  </section>
+
+  <footer class="dash-footer">
+    <div class="dash-footer-links">
+      <button type="button" class="link-inline" id="openTermsDash">Terms &amp; Conditions</button>
+      <button type="button" class="link-inline" id="openPrivacyDash">Privacy Policy</button>
+    </div>
+    <p class="dash-footer-copy">© 2026 Nova Nexus · help.novanexus@gmail.com</p>
+  </footer>
+</main>
+
+<!-- ================= DELETE ACCOUNT MODAL ================= -->
+<div class="modal-overlay" id="deleteAccountModal">
+  <div class="modal-panel modal-panel--danger glass" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <header class="modal-header">
+      <h2 id="deleteTitle">Delete your account</h2>
+      <button type="button" class="icon-btn" data-close-modal="deleteAccountModal" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="danger-warning">This permanently deletes your Nova Nexus profile and revokes your access to every connected Side Website. This can't be undone.</p>
+
+      <div class="field">
+        <input type="text" id="deletePhrase" placeholder=" " autocomplete="off" spellcheck="false">
+        <label for="deletePhrase">Type DELETE MY NOVA NEXUS ACCOUNT to confirm</label>
+      </div>
+
+      <div class="field" id="deletePasswordSection">
+        <input type="password" id="deletePassword" placeholder=" " autocomplete="current-password">
+        <label for="deletePassword">Current password</label>
+      </div>
+
+      <button type="button" class="btn btn-secondary btn-block" id="deleteGoogleReauthBtn" hidden>
+        <span class="btn-label">Re-authenticate with Google</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button type="button" class="btn btn-danger btn-block" id="confirmDeleteBtn" disabled>
+        <span class="btn-label">Permanently Delete Account</span>
+        <span class="btn-spinner"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="privacyModal">
+  <div class="modal-panel glass" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <header class="modal-header">
+      <h2 id="privacyTitle">Privacy Policy</h2>
+      <button type="button" class="icon-btn" data-close-modal="privacyModal" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body legal-text">
+      <span class="updated">Last Updated: [15-09-2026]</span>
+      <h3>1. Introduction</h3>
+      <p>Nova Nexus ("Nova Nexus," "we," "us," or "our") operates a centralized identity and single sign-on ("SSO") platform that authenticates users across the Nova Nexus ecosystem of affiliated applications (each a "Side Website"). This Privacy Policy explains what limited information we collect, why we collect it, how it is stored and protected, and how it is used to recognize you across the ecosystem. By creating an account, you acknowledge that you have read and understood this Privacy Policy.</p>
+      <h3>2. Information We Collect</h3>
+      <p><strong>Email address</strong> — used for account identification, verification, and essential service communication.<br>
+      <strong>Username</strong> — a display name you choose (or, if you sign in with Google, one derived from your Google profile), shown to you and, where relevant, to Side Websites you access.<br>
+      <strong>Password</strong> — if you register directly with Nova Nexus, your password is never stored by us in readable form; it is handled entirely by Firebase Authentication using industry-standard salted hashing. If you use Google Sign-In instead, we never see or store a password at all.<br>
+      <strong>Google profile data</strong> — if you choose "Continue with Google," Google shares your name, email address, and (if available) profile photo with us for the purpose of creating and recognizing your account, subject to Google's own privacy practices for that exchange.<br>
+      <strong>Authentication metadata</strong> — a unique user identifier, account creation timestamp, sign-in provider, and email verification status.<br>
+      <strong>Basic technical and device data</strong>, collected automatically by our infrastructure providers (Firebase/Google Cloud, and Google reCAPTCHA for bot protection — see Section 6) for security and abuse-prevention purposes. We do not independently log or analyze this data for marketing purposes.</p>
+      <p>We do not collect your physical address, phone number, or payment details, unless you voluntarily provide such information to a specific Side Website, which is then governed by that Side Website's own privacy practices.</p>
+      <h3>3. How We Use Your Information</h3>
+      <p>We use your information to: create and secure your account; verify your email address (or recognize Google's own verification of it); authenticate you when you sign in; generate short-lived, cryptographically signed tokens that let you move between Side Websites without re-entering your credentials; display your username and email on your dashboard; detect and prevent fraudulent or unauthorized account activity; and send essential account communications, such as verification links and password reset emails. We do not use your information for advertising, and we do not build behavioral or marketing profiles from it.</p>
+      <h3>4. The Nova Nexus Ecosystem &amp; Single Sign-On</h3>
+      <p>Nova Nexus acts as the identity provider for a family of Side Websites. When you choose to access a Side Website from your dashboard, Nova Nexus opens it and delivers a short-lived signed authentication token (a JSON Web Token, or "JWT") directly from window to window, using your browser's native cross-window messaging with strict checks on which site is allowed to receive it — the token is never placed in a URL, so it cannot end up in browser history or a server log. The token contains only the minimal claims necessary for identification — your unique user ID, your email address, and your email verification status — and it expires automatically after a short period. Because a token remains cryptographically valid until it naturally expires, deleting your account or signing out does not instantly invalidate a token already delivered to a Side Website; it simply will not be renewed. Side Websites are expected to validate tokens cryptographically and are responsible for their own handling of any session created from one. Nova Nexus never transmits your password, and Side Websites never receive your credentials.</p>
+      <h3>5. Data Storage, Security, and Firebase Infrastructure</h3>
+      <p>All account data is stored using Firebase Authentication and Cloud Firestore, both Google Cloud products, which encrypt data at rest and in transit by default. We restrict Firestore access with security rules so a signed-in, verified user may only read and write their own profile document, only ever containing the exact fields our application defines; no user can access another user's stored data through normal use of the application. While we implement reasonable technical safeguards, no system connected to the internet can be guaranteed completely secure.</p>
+      <h3>6. Bot and Abuse Protection</h3>
+      <p>Nova Nexus uses Firebase App Check with Google reCAPTCHA to help confirm that requests to our systems come from our genuine application rather than automated scripts or bots. reCAPTCHA may collect hardware and software information, such as device and application data, and send it to Google for analysis; this is governed by the Google Privacy Policy and Terms of Service linked on our sign-in screen. This mechanism exists solely to protect account security and platform integrity — it is not used to track you for advertising.</p>
+      <h3>7. Zero-Budget / Best-Effort Infrastructure Disclaimer</h3>
+      <p>Nova Nexus currently runs as an independently funded, best-effort project on free or low-cost infrastructure tiers. We do not guarantee any specific uptime, service level, or response time, and the platform is provided on an "as available" basis. Features, storage limits, or the service itself may change, be temporarily interrupted, or be discontinued at any time, with notice provided where reasonably practical.</p>
+      <h3>8. We Do Not Sell Your Data</h3>
+      <p>We do not sell, rent, or trade your personal information to third parties, advertisers, or data brokers, under any circumstances. We do not use third-party advertising trackers. The only parties that process data on our behalf are Firebase/Google Cloud (as our infrastructure provider) and Google reCAPTCHA (for bot protection), each bound by Google's own data processing terms.</p>
+      <h3>9. Data Retention and Deletion</h3>
+      <p>We retain your account information for as long as your account remains active. You can permanently delete your account and profile data at any time from your dashboard's Danger Zone, without needing to contact us — this requires confirming a security phrase and re-authenticating, and takes effect immediately once confirmed. See Section 4 above regarding the limited lifetime of tokens already delivered before deletion. You may also contact us using the details below if you'd prefer we process a deletion request manually.</p>
+      <h3>10. Your Rights</h3>
+      <p>Depending on your location, you may have rights to access, correct, or delete your personal data, and to object to or restrict certain processing. You can update your username directly from your dashboard, and delete your account and data directly as described above. For any other request, contact us using the information in Section 13.</p>
+      <h3>11. Children's Privacy</h3>
+      <p>Nova Nexus is not directed at, and is not intended for use by, children under the age of 13 (or the minimum age required in your jurisdiction). We do not knowingly collect personal information from children.</p>
+      <h3>12. Cookies and Local Storage</h3>
+      <p>Nova Nexus does not use third-party advertising cookies. Firebase Authentication uses your browser's local or session storage (depending on whether you choose "Keep me signed in") to keep you signed in; this data stays on your device and is not shared with advertisers.</p>
+      <h3>13. Changes to This Policy and Contact</h3>
+      <p>We may update this Privacy Policy from time to time. Material changes will be reflected by an updated "Last Updated" date above. Questions or requests can be sent to: <strong>help.novanexus@gmail.com</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="termsModal">
+  <div class="modal-panel glass" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <header class="modal-header">
+      <h2 id="termsTitle">Terms &amp; Conditions</h2>
+      <button type="button" class="icon-btn" data-close-modal="termsModal" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </header>
+    <div class="modal-body legal-text">
+      <span class="updated">Last Updated: [15-09-2026]</span>
+      <h3>1. Acceptance of Terms</h3>
+      <p>These Terms &amp; Conditions ("Terms") form a binding agreement between you and Nova Nexus ("we," "us," "our") governing your access to and use of the Nova Nexus identity and single sign-on platform (the "Service"), including any Side Websites that rely on Nova Nexus for authentication. By creating an account or otherwise using the Service, you agree to be bound by these Terms.</p>
+      <h3>2. Description of the Service</h3>
+      <p>Nova Nexus is a centralized authentication hub — the "Mother Website" — that issues, manages, and verifies user identity for a connected ecosystem of independent applications ("Side Websites"). Each Side Website may have its own functionality and additional terms; Nova Nexus is not responsible for the content, availability, or conduct of any Side Website beyond the authentication layer it provides.</p>
+      <h3>3. Eligibility</h3>
+      <p>You must be at least 13 years old (or the minimum age of digital consent in your jurisdiction, if higher) and capable of forming a legally binding contract to create an account.</p>
+      <h3>4. Account Registration and Security</h3>
+      <p>You may register with an email and password, or by using "Continue with Google." Either way, you agree to keep your login credentials confidential, and you are solely responsible for all activity under your account, whether or not you authorized it, except to the extent caused by our negligence. You may not share your account, password, or any authentication token with anyone else.</p>
+      <h3>5. Email Verification Requirement</h3>
+      <p>Access to your dashboard and to any Side Website within the ecosystem requires a verified email address. If you register directly, a verification link is sent to your email, and your account remains gated until you confirm it or resend the link from the verification screen. If you use Google Sign-In, your email is already verified by Google and this step is bypassed automatically.</p>
+      <h3>6. Acceptable Use Policy</h3>
+      <p>You agree not to, and not to attempt to: (a) create multiple accounts for abuse, evasion of restrictions, or fraud; (b) bypass, disable, reverse-engineer, or interfere with our authentication, security, bot-detection, rate-limiting, or token-issuance systems, including Firebase App Check and reCAPTCHA; (c) share, sell, transfer, or publish your authentication token or session credentials; (d) access or attempt to access another user's account, data, or authentication token without authorization; (e) use automated scripts, bots, or scraping tools to register accounts or interact with the Service outside ordinary human use; (f) impersonate any person or entity; (g) upload or associate with your account any username or content that is unlawful, hateful, obscene, defamatory, or infringing; or (h) use the Service to facilitate illegal activity. We may investigate suspected violations and take appropriate action, including suspension or termination of your account, without prior notice where warranted.</p>
+      <h3>7. SSO Tokens and Ecosystem Access</h3>
+      <p>When you use the Service to access a Side Website, Nova Nexus delivers a short-lived, cryptographically signed authentication token tied to your account directly between your browser windows, with strict checks on which site may receive it — never through a URL. The token is intended solely to authenticate you to that specific Side Website, and it expires automatically after a limited period. You agree not to extract, copy, replay, or misuse this token outside its intended purpose. Nova Nexus's role is limited to providing the authentication layer and does not extend to guaranteeing, endorsing, or being responsible for any Side Website's content, features, or conduct.</p>
+      <h3>8. Account Deletion</h3>
+      <p>You may permanently delete your account at any time from your dashboard's Danger Zone. To protect against accidental or unauthorized deletion, this requires typing an exact confirmation phrase and re-authenticating with your credential. Deletion removes your stored profile data and your authentication record and is irreversible. As described in our Privacy Policy, a token already delivered to a Side Website before deletion may remain technically valid until it naturally expires, since tokens are not instantly revocable once issued; Nova Nexus is not responsible for a Side Website's continued acceptance of a token during that residual window.</p>
+      <h3>9. Bot and Abuse Prevention</h3>
+      <p>The Service uses Firebase App Check with Google reCAPTCHA to help distinguish genuine users from automated traffic. Your use of the Service is subject to Google's Privacy Policy and Terms of Service with respect to that mechanism. Attempting to defeat, spoof, or circumvent this or any other anti-abuse measure is a violation of these Terms.</p>
+      <h3>10. Zero-Budget Infrastructure and Service Availability</h3>
+      <p>The Service currently operates on independently funded, free, or low-cost infrastructure on a best-effort basis. We do not guarantee uninterrupted, timely, secure, or error-free operation, and we do not warrant any specific uptime or service level. We may modify, suspend, or discontinue any part of the Service at any time, with or without notice, to the extent reasonably practical.</p>
+      <h3>11. Intellectual Property</h3>
+      <p>All branding, design, source code, and content that make up Nova Nexus (excluding content you submit, such as your chosen username) are owned by us or our licensors. Nothing in these Terms grants you any right to use our name, logo, or branding without prior written permission, except as necessary to use the Service as intended.</p>
+      <h3>12. Termination</h3>
+      <p>We may suspend or terminate your account, with or without notice, if we reasonably believe you have violated these Terms, engaged in fraudulent or abusive behavior, or posed a security risk. You may delete your own account at any time as described in Section 8. Provisions that by their nature should survive termination (including Sections 6, 7, 8, 9, 11, and 14) will survive.</p>
+      <h3>13. Disclaimer of Warranties</h3>
+      <p>The Service is provided "as is" and "as available," without warranties of any kind, whether express, implied, or statutory, including implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+      <h3>14. Limitation of Liability</h3>
+      <p>To the maximum extent permitted by applicable law, Nova Nexus and its operators are not liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data, revenue, or goodwill, arising from your use of, or inability to use, the Service. Our total aggregate liability arising from these Terms will not exceed the amount, if any, you have paid us to use the Service in the twelve months preceding the claim — which, for a free service, is zero.</p>
+      <h3>15. Indemnification</h3>
+      <p>You agree to indemnify and hold harmless Nova Nexus and its operators from any claims, damages, losses, or expenses, including reasonable legal fees, arising from your violation of these Terms or your misuse of the Service.</p>
+      <h3>16. Governing Law</h3>
+      <p>These Terms are governed by and construed in accordance with the laws of [Insert Jurisdiction], without regard to its conflict-of-law principles, unless otherwise required by mandatory law in your jurisdiction of residence.</p>
+      <h3>17. Changes to These Terms</h3>
+      <p>We may revise these Terms from time to time. Material changes will be reflected by an updated "Last Updated" date above. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.</p>
+      <h3>18. Severability and Contact</h3>
+      <p>If any provision of these Terms is found unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary, and the remaining provisions will stay in full force and effect. Questions about these Terms can be sent to: <strong>help.novanexus@gmail.com</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase v10 Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-check-compat.js"></script>
+
+<script src="app.js"></script>
+</body>
+</html>
