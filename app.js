@@ -710,7 +710,7 @@ confirmDeleteBtn.addEventListener("click", async () => {
 
 /* ---------- 24. SSO / ecosystem token handoff (postMessage) ---------- */
 const ALLOWED_SIDE_ORIGINS = [
-  "https://side-website-placeholder.vercel.app"
+  "https://uvcrm.vercel.app"
   // Add one entry per registered Side Website — exact origin only.
 ];
 const SIDE_WEBSITE_URL = ALLOWED_SIDE_ORIGINS[0];
